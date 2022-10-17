@@ -1,3 +1,4 @@
+from email.policy import default
 from chaos.scenarios.abstract_single_fault import AbstractSingleFault
 from sh import mkdir
 from chaos.faults.all import FAULTS
@@ -84,9 +85,8 @@ class TxMoneySingleFault(AbstractSingleFault):
             else:
                 self.redpanda_cluster.add_node(host, node_id)
 
-        tx_log_level = self.read_config(["settings", "log-level", "tx"], "info")
-
-        self.redpanda_cluster.launch_everywhere(self.read_config(["settings", "redpanda"], {}), tx_log_level=tx_log_level)
+        log_levels = self.read_config(["settings", "log-level"], { "default": "info" })
+        self.redpanda_cluster.launch_everywhere(self.read_config(["settings", "redpanda"], {}), log_levels)
         self.redpanda_cluster.wait_alive(timeout_s=10)
         self.redpanda_cluster.get_stable_view(timeout_s=60)
 

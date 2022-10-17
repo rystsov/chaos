@@ -1,3 +1,4 @@
+from email.policy import default
 from time import sleep
 from sh import ssh
 import logging
@@ -31,5 +32,6 @@ class KillLeaderFault:
         ssh("ubuntu@"+self.leader.ip, "/mnt/vectorized/control/redpanda.stop.sh")
     
     def heal(self, scenario):
-        tx_log_level = scenario.read_config(["settings", "log-level", "tx"], "info")
-        ssh("ubuntu@"+self.leader.ip, "/mnt/vectorized/control/redpanda.start.sh", tx_log_level)
+        default = scenario.default_log_level()
+        log_levels = scenario.log_levels()
+        ssh("ubuntu@"+self.leader.ip, "/mnt/vectorized/control/redpanda.start.sh", default, log_levels)
