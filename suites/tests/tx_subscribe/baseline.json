@@ -16,6 +16,11 @@
             "retries": 5
         }
     },
+    "settings": {
+        "log-level": {
+            "default": "trace"
+        }
+    },
     "fault": null,
     "checks": [
         { "name": "redpanda_process_liveness" }

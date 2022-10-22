@@ -139,6 +139,7 @@ class RedpandaCluster:
     def launch(self, node, log_levels = None):
         if log_levels == None:
             log_levels = {}
+        log_levels = log_levels.copy()
         if "default" not in log_levels:
             log_levels["default"] = "info"
         default = log_levels["default"]

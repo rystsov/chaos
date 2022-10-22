@@ -10,7 +10,7 @@
             { "name": "stat" }
         ],
         "settings": {
-            "producers": 3,
+            "producers": 2,
             "retries": 5
         }
     },
