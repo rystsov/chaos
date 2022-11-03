@@ -15,6 +15,18 @@
             "hist_readers": 2
         }
     },
+    "settings": {
+        "redpanda": {
+            "redpanda.compacted_log_segment_size": 1048577,
+            "redpanda.log_cleanup_policy": "compact",
+            "redpanda.log_segment_size": 1048577
+        },
+        "cleanup": "compact",
+        "remove_logs_on_success": false,
+        "log-level": {
+            "default": "trace"
+        }
+    },
     "fault": {
         "name": "reconfigure_313",
         "timeout_s": 60,
