@@ -84,7 +84,7 @@ class LogPlayer:
 
         self.ts_us = None
     
-    def consuming_apply(self, thread_id, parts):
+    def consuming_apply(self, thread_id, old_state, parts):
         if self.curr_state[thread_id] == State.SEEN:
             try:
                 self.read_checker.seen(self.node, int(parts[3]), parts[4], parts[5], int(parts[6]), int(parts[7]))
@@ -94,7 +94,23 @@ class LogPlayer:
                 trace = traceback.format_exc()
                 logger.error(v)
                 logger.error(trace)
-    
+        if old_state == State.CONSTRUCTING:
+            return
+        if self.curr_state[thread_id] == State.ERROR:
+            self.errors += 1
+
+    def producing_apply(self, thread_id, old_state, parts):
+        if old_state == State.CONSTRUCTING:
+            return
+        if self.curr_state[thread_id] == State.ERROR:
+            self.errors += 1
+
+    def streaming_apply(self, thread_id, old_state, parts):
+        if old_state == State.CONSTRUCTING:
+            return
+        if self.curr_state[thread_id] == State.ERROR:
+            self.errors += 1
+
     def is_violation(self, line):
         if line == None:
             return False
@@ -129,8 +145,6 @@ class LogPlayer:
             return
         if new_state == State.LOG:
             return
-        if new_state == State.ERROR:
-            self.errors += 1
         
         thread_id = int(parts[0])
         if thread_id not in self.curr_state:
@@ -138,17 +152,24 @@ class LogPlayer:
             self.curr_state[thread_id] = None
             if self.thread_type[thread_id] not in threads:
                 raise Exception(f"unknown thread type: {parts[4]}")
+        
         if self.curr_state[thread_id] == None:
             if new_state != State.STARTED:
                 raise Exception(f"first logged command of a new thread should be started, got: \"{parts[2]}\"")
-            self.curr_state[thread_id] = new_state
         else:
             if new_state not in threads[self.thread_type[thread_id]][self.curr_state[thread_id]]:
                 raise Exception(f"unknown transition {self.curr_state[thread_id]} -> {new_state}")
-            self.curr_state[thread_id] = new_state
+        old_state = self.curr_state[thread_id]
+        self.curr_state[thread_id] = new_state
 
         if self.thread_type[thread_id] == "consuming":
-            self.consuming_apply(thread_id, parts)
+            self.consuming_apply(thread_id, old_state, parts)
+        elif self.thread_type[thread_id] == "producing":
+            self.producing_apply(thread_id, old_state, parts)
+        elif self.thread_type[thread_id] == "streaming":
+            self.streaming_apply(thread_id, old_state, parts)
+        else:
+            raise Exception(f"unknown thread {self.thread_type[thread_id]}")
 
 def validate(config, workload_dir):
     logger.setLevel(logging.DEBUG)
