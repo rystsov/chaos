@@ -8,7 +8,7 @@ if ! ./docker/ready6.2.sh; then
   ./docker/down6.2.sh
   exit 1
 fi
-./docker/test.suite.sh suites/test_suite_tx_subscribe.err.json
+./docker/test.suite.sh suites/test_suite_tx_subscribe.err.json 10
 ./docker/fetch.logs.sh
 ./docker/down6.2.sh
 
